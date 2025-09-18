@@ -1,118 +1,107 @@
-# F1 Next.js Demo
+# 🏎️ F1 Next.js Demo
 
-A modern Formula 1 themed web application with emotion tracking capabilities built with Next.js and React.
+> A modern Formula 1 themed web application with emotion tracking capabilities built with Next.js and React
 
-## Features
+[![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=black)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
-- **Driver Profiles** - Comprehensive information about 2025 F1 drivers
-- **Team Overview** - Detailed team statistics and current lineup
-- **Circuit Guide** - Interactive track information and race calendar
-- **Rules & Regulations** - F1 sporting regulations explained
-- **Historical Data** - F1 championship history and memorable moments
-- **Emotion Tracking** - AI-powered emotion detection and analysis
-- **3D Visualization** - Interactive 3D graphics with Three.js
+## ✨ Features
 
-## Tech Stack
+🏆 **Driver Profiles** - Comprehensive information about 2025 F1 drivers
+🏁 **Team Overview** - Detailed team statistics and current lineup
+🗺️ **Circuit Guide** - Interactive track information and race calendar
+📋 **Rules & Regulations** - F1 sporting regulations explained
+📚 **Historical Data** - F1 championship history and memorable moments
+🧠 **Emotion Tracking** - AI-powered emotion detection and analysis
+🎮 **3D Visualization** - Interactive 3D graphics with Three.js
 
-- **Next.js 15** - React framework with App Router
-- **React 19** - Latest React with concurrent features
-- **TypeScript** - Type-safe development
-- **Tailwind CSS** - Utility-first CSS framework
-- **Three.js** - 3D graphics and visualization
-- **TensorFlow.js** - Machine learning in the browser
-- **MediaPipe** - Real-time pose and hand detection
-- **GSAP** - Professional animation library
-- **Zustand** - Lightweight state management
+## 🛠️ Tech Stack
 
-## Getting Started
+| Technology | Purpose | Why? |
+|------------|---------|------|
+| **Next.js 15** | Full-stack Framework | Server-side rendering and App Router |
+| **React 19** | UI Library | Latest React with concurrent features |
+| **TypeScript** | Type Safety | Enhanced development experience |
+| **Tailwind CSS** | Styling | Utility-first for rapid UI development |
+| **Three.js** | 3D Graphics | Interactive 3D visualizations |
+| **TensorFlow.js** | Machine Learning | Browser-based AI capabilities |
+| **GSAP** | Animation | Professional motion graphics |
+
+## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js 18+
-- npm or yarn or pnpm
+- npm or yarn or pnpm (recommended)
 
-### Installation
+### Installation & Setup
 
 ```bash
+# Clone the repository
+git clone https://github.com/Selene-ovo/F1_Demo_Web_Page_Next.git
+
+# Navigate to project directory
+cd F1_Demo_Web_Page_Next
+
 # Install dependencies
-npm install
-# or
-yarn install
-# or
 pnpm install
 
 # Start development server
-npm run dev
-# or
-yarn dev
-# or
 pnpm dev
 
 # Build for production
-npm run build
-# or
-yarn build
-# or
 pnpm build
 
 # Start production server
-npm start
-# or
-yarn start
-# or
 pnpm start
-
-# Run linter
-npm run lint
-# or
-yarn lint
-# or
-pnpm lint
 ```
 
-## Project Structure
+## 📁 Project Architecture
 
 ```
-src/
-├── app/
-│   ├── globals.css     # Global styles
-│   ├── layout.tsx      # Root layout
-│   ├── page.tsx        # Home page
-│   └── not-found.tsx   # 404 page
-├── components/
-│   ├── pages/          # Page components
-│   │   ├── 01_Home.tsx
-│   │   ├── 02_Driver.tsx
-│   │   ├── 03_Teams.tsx
-│   │   ├── 04_Rule.tsx
-│   │   ├── 05_History.tsx
-│   │   ├── 06_With.tsx
-│   │   └── 07_Circuit.tsx
-│   ├── ui/             # Reusable UI components
-│   └── layout/         # Layout components
-├── assets/
-│   ├── images/         # Static images
-│   ├── css/            # Stylesheets
-│   └── Music/          # Audio files
-├── lib/                # Utilities and hooks
-└── types/              # TypeScript type definitions
+emotion_next/
+├── 📦 src/
+│   ├── 🎯 app/
+│   │   ├── globals.css     # Global styles
+│   │   ├── layout.tsx      # Root layout
+│   │   ├── page.tsx        # Home page
+│   │   └── not-found.tsx   # 404 page
+│   ├── 🎭 components/
+│   │   ├── pages/          # Main page components
+│   │   ├── ui/             # Reusable UI components
+│   │   └── layout/         # Shared layout components
+│   ├── 🎨 assets/
+│   │   ├── images/         # Static images & media
+│   │   ├── css/            # Stylesheets
+│   │   └── Music/          # Audio assets
+│   ├── 📚 lib/             # Utilities and hooks
+│   └── 🔷 types/           # TypeScript definitions
+├── 🔧 public/              # Static public assets
+└── ⚙️ config files         # Next.js, TypeScript, etc.
 ```
 
-## Demo
+## 🎯 Learning Goals
 
-Visit the live demo: https://gitea.ewcorp.co/JungHo/Web_Demo_Next
+This project was built as part of a Vue.js to Next.js migration to explore:
+- Modern Next.js App Router architecture
+- Server-side rendering and static generation
+- TypeScript integration with React
+- Advanced state management patterns
+- AI/ML integration in web applications
 
-## Development Features
+## 🌐 Demo
 
-- Hot Reload - Instant updates during development
-- TypeScript Support - Full type checking and IntelliSense
-- Modern React - Latest React 19 features
-- Responsive Design - Mobile-first approach
-- Performance Optimized - Next.js automatic optimizations
+🔗 Live Preview: https://gitea.ewcorp.co/JungHo/Web_Demo_Next
 
-## Contributing
+## 📸 Screenshots
 
-This project is developed as a learning exercise for Next.js and emotion tracking technologies. Feedback and suggestions are welcome.
+Coming soon - Screenshots of the application in action
 
-## License
+## 🤝 Contributing
 
-Educational use only.
+This is a learning project focused on Next.js and emotion tracking technologies. Feedback and suggestions are always welcome!
+
+## 📄 License
+
+Educational use only - Built for learning purposes
