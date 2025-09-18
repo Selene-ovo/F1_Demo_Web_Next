@@ -1,0 +1,43 @@
+{
+  "name": "emotion_next",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@mediapipe/hands": "^0.4.1675469240",
+    "@mediapipe/pose": "^0.5.1675469404",
+    "@tensorflow/tfjs": "^4.22.0",
+    "@types/three": "^0.180.0",
+    "cannon-es": "^0.20.0",
+    "dat.gui": "^0.7.9",
+    "gsap": "^3.13.0",
+    "leva": "^0.10.0",
+    "lil-gui": "^0.20.0",
+    "locomotive-scroll": "^4.1.4",
+    "next": "15.5.0",
+    "overlayscrollbars": "^2.12.0",
+    "postprocessing": "^6.37.8",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "stats.js": "^0.17.0",
+    "three": "^0.180.0",
+    "troika-three-text": "^0.52.4",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^24.5.0",
+    "@types/react": "^19.1.13",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.0",
+    "file-loader": "^6.2.0",
+    "tailwindcss": "^4",
+    "typescript": "^5.9.2"
+  }
+}
