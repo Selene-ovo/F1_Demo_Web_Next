@@ -90,10 +90,6 @@ This project was built as part of a Vue.js to Next.js migration to explore:
 - Advanced state management patterns
 - AI/ML integration in web applications
 
-## 🌐 Demo
-
-🔗 Live Preview: https://gitea.ewcorp.co/JungHo/Web_Demo_Next
-
 ## 🤝 Contributing
 
 This is a learning project focused on Next.js and emotion tracking technologies. Feedback and suggestions are always welcome!
