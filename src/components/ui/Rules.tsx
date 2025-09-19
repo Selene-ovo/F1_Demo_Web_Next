@@ -477,7 +477,7 @@ const Rules = () => {
     // Scene setup
     sceneRef.current = new THREE.Scene()
 
-    // Camera
+  // Three.js 원근 투영 카메라 생성
     cameraRef.current = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 1, 10000)
     cameraRef.current.position.set(0, 0, 2500)
 
@@ -642,75 +642,81 @@ const Rules = () => {
     })
   }, [])
 
+  // [카메라 컨트롤] 마우스 드래그로 360도 회전 + Ctrl+휠로 줌 기능
   const addControls = useCallback(() => {
-    // Smooth 360 rotation controls with zoom
-    let isMouseDown = false
-    let targetRotationX = 0, targetRotationY = 0
-    let rotationX = 0, rotationY = 0
-    let targetRadius = 2500, currentRadius = 2500
-    let isCtrlPressed = false
+    // [컨트롤 변수들] 마우스 상태와 카메라 위치 추적
+    let isMouseDown = false           // 마우스 드래그 상태
+    let targetRotationX = 0, targetRotationY = 0  // 목표 회전각 (X: 상하, Y: 좌우)
+    let rotationX = 0, rotationY = 0              // 현재 회전각 (부드러운 보간용)
+    let targetRadius = 2500, currentRadius = 2500 // 카메라 거리 (줌 레벨)
+    let isCtrlPressed = false         // Ctrl 키 눌림 상태
 
     const container = containerRef.current
 
+    // [마우스 이벤트] 드래그 시작/종료 처리
     const handleMouseDown = (event) => {
       isMouseDown = true
-      container.style.cursor = 'grabbing'
+      container.style.cursor = 'grabbing'  // 드래그 중 커서 변경
     }
 
     const handleMouseUp = () => {
       isMouseDown = false
-      container.style.cursor = 'grab'
+      container.style.cursor = 'grab'      // 기본 커서로 복원
     }
 
     const handleMouseLeave = () => {
       isMouseDown = false
-      container.style.cursor = 'grab'
+      container.style.cursor = 'grab'      // 마우스가 영역 벗어날 때도 드래그 종료
     }
 
+    // [드래그 회전] 마우스 움직임을 카메라 회전으로 변환
     const handleMouseMove = (event) => {
       if (isMouseDown) {
-        // Once user starts dragging, permanently activate the interface
+        // [매트릭스 활성화] 사용자가 드래그를 시작하면 매트릭스 배경 효과 활성화
         setHasStartedDragging(true)
 
+        // [마우스 이동량] 브라우저 호환성을 위한 movement 값 가져오기
         const deltaX = event.movementX || event.mozMovementX || event.webkitMovementX || 0
         const deltaY = event.movementY || event.mozMovementY || event.webkitMovementY || 0
 
-        // Smoother rotation with better sensitivity
-        targetRotationY += deltaX * 0.008
-        targetRotationX += deltaY * 0.008
+        // [회전 계산] 마우스 이동량을 회전각으로 변환 (감도: 0.008)
+        targetRotationY += deltaX * 0.008  // 좌우 드래그 → Y축 회전 (수평)
+        targetRotationX += deltaY * 0.008  // 상하 드래그 → X축 회전 (수직)
 
-        // Limit vertical rotation for better UX
+        // [회전 제한] 수직 회전을 ±60도로 제한하여 뒤집히지 않게 함
         targetRotationX = Math.max(-Math.PI/3, Math.min(Math.PI/3, targetRotationX))
       }
     }
 
-    // Track Ctrl key state
+    // [키보드 이벤트] Ctrl 키 상태 추적 (줌 기능 활성화용)
     const handleKeyDown = (event) => {
       if (event.key === 'Control') {
-        isCtrlPressed = true
+        isCtrlPressed = true  // Ctrl 키 눌림 - 휠 줌 활성화
       }
     }
 
     const handleKeyUp = (event) => {
       if (event.key === 'Control') {
-        isCtrlPressed = false
+        isCtrlPressed = false // Ctrl 키 해제 - 휠 줌 비활성화
       }
     }
 
-    // Add mouse wheel zoom functionality (only with Ctrl key)
+    // [마우스 휠 줌] Ctrl+휠로만 작동하는 확대/축소 기능
     const handleWheel = (event) => {
+      // [줌 조건] Ctrl 키가 눌려있을 때만 줌 작동 (브라우저 기본 줌과 구분)
       if (event.ctrlKey || isCtrlPressed) {
-        event.preventDefault()
+        event.preventDefault()  // 브라우저 기본 줌 방지
 
-        const zoomSpeed = 100
-        const minRadius = 500
-        const maxRadius = 5000
+        // [줌 설정] 줌 속도와 거리 제한
+        const zoomSpeed = 100   // 한 번 휠할 때 이동 거리
+        const minRadius = 500   // 최대 확대 (가까이)
+        const maxRadius = 5000  // 최대 축소 (멀리)
 
         if (event.deltaY > 0) {
-          // Zoom out
+          // [줌 아웃] 휠을 아래로 → 카메라가 멀어짐 (축소)
           targetRadius = Math.min(targetRadius + zoomSpeed, maxRadius)
         } else {
-          // Zoom in
+          // [줌 인] 휠을 위로 → 카메라가 가까워짐 (확대)
           targetRadius = Math.max(targetRadius - zoomSpeed, minRadius)
         }
       }
@@ -726,47 +732,55 @@ const Rules = () => {
 
     container.style.cursor = 'grab'
 
+    // [렌더링 루프] 매 프레임마다 카메라 위치 업데이트
     const render = () => {
-      // Very smooth rotation and zoom interpolation
-      rotationX += (targetRotationX - rotationX) * 0.08
-      rotationY += (targetRotationY - rotationY) * 0.08
-      currentRadius += (targetRadius - currentRadius) * 0.1
+      // [부드러운 보간] 목표값과 현재값 사이를 부드럽게 보간 (lerp)
+      rotationX += (targetRotationX - rotationX) * 0.08      // 8% 씩 회전각 보간
+      rotationY += (targetRotationY - rotationY) * 0.08      // 8% 씩 회전각 보간
+      currentRadius += (targetRadius - currentRadius) * 0.1  // 10% 씩 거리 보간
 
-      // Always use orbital camera with dynamic zoom
+      // [궤도 카메라] 구면 좌표계를 사용한 궤도 카메라 구현
+      // X = cos(수평회전) * cos(수직회전) * 거리
       cameraRef.current.position.x = Math.cos(rotationY) * Math.cos(rotationX) * currentRadius
+      // Y = sin(수직회전) * 거리
       cameraRef.current.position.y = Math.sin(rotationX) * currentRadius
+      // Z = sin(수평회전) * cos(수직회전) * 거리
       cameraRef.current.position.z = Math.sin(rotationY) * Math.cos(rotationX) * currentRadius
 
+      // [카메라 방향] 항상 중심(원점)을 바라보도록 설정
       cameraRef.current.lookAt(sceneRef.current.position)
 
-      // Update expanded card position if exists
+      // [확장된 카드] 선택된 카드가 있으면 카메라 앞에 고정 위치 유지
       if (expandedRuleRef.current) {
         const expandedObject = objectsRef.current.find(obj => obj.userData.rule === expandedRuleRef.current)
         if (expandedObject) {
+          // [카메라 방향] 카메라가 바라보는 방향 벡터 계산
           const cameraDirection = new THREE.Vector3()
           cameraRef.current.getWorldDirection(cameraDirection)
 
+          // [고정 거리] 카메라로부터 1000 단위 떨어진 위치
           const distanceFromCamera = 1000
           const newTargetPosition = new THREE.Vector3()
           newTargetPosition.copy(cameraRef.current.position).add(cameraDirection.multiplyScalar(distanceFromCamera))
 
-          // Offset upward to avoid UI panel overlap
+          // [위치 조정] UI 패널과 겹치지 않도록 위쪽으로 100 단위 이동
           newTargetPosition.y += 100
 
-          // Smoothly update expanded card position
+          // [부드러운 이동] 확장된 카드를 목표 위치로 10%씩 보간 이동
           expandedObject.position.lerp(newTargetPosition, 0.1)
 
-          // Make card always face camera
+          // [카메라 향하기] 카드가 항상 카메라를 향하도록 회전 계산
           const lookAtQuaternion = new THREE.Quaternion()
           const tempMatrix = new THREE.Matrix4()
           tempMatrix.lookAt(expandedObject.position, cameraRef.current.position, cameraRef.current.up)
           lookAtQuaternion.setFromRotationMatrix(tempMatrix)
 
-          // Add 180 degree flip to show back side
+          // [180도 뒤집기] 카드 뒷면을 보여주기 위해 Y축으로 180도 회전
           const flipQuaternion = new THREE.Quaternion()
           flipQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI)
           lookAtQuaternion.multiply(flipQuaternion)
 
+          // [부드러운 회전] 카드 회전을 10%씩 보간
           expandedObject.quaternion.slerp(lookAtQuaternion, 0.1)
         }
       }
@@ -1034,7 +1048,7 @@ const Rules = () => {
 
   return (
     <div className="rules-periodic-system">
-      {/* Matrix Background Effect */}
+      {/* 뒤에 매크릭스 효과 */}
       <div className={`matrix-background ${hasStartedDragging ? 'visible' : ''}`}>
         {matrixColumns.map((column, columnIndex) => (
           <div

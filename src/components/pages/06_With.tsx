@@ -29,29 +29,6 @@ export default function With() {
   const [secondRowSponsors, setSecondRowSponsors] = useState([])
   const [thirdRowSponsors, setThirdRowSponsors] = useState([])
 
-  const partnershipCategories = [
-    {
-      id: 1,
-      icon: '🏎️',
-      title: 'Official Partners',
-      description: 'F1의 공식 파트너들과 함께하는 혁신',
-      sponsors: ['AWS', 'Lenovo', 'Heineken']
-    },
-    {
-      id: 2,
-      icon: '🥂',
-      title: 'Luxury Partners',
-      description: '프리미엄 라이프스타일 파트너십',
-      sponsors: ['LVMH', 'Hennessy', 'AMEX']
-    },
-    {
-      id: 3,
-      icon: '🌍',
-      title: 'Global Sponsors',
-      description: '전 세계적인 브랜드 파트너십',
-      sponsors: ['Qatar', 'Paramount', 'Nestle']
-    }
-  ]
 
   const getSponsorLogo = (sponsorName) => {
     const sponsor = allSponsors.find(s => s.name.toLowerCase().includes(sponsorName.toLowerCase()))
@@ -282,6 +259,7 @@ export default function With() {
           transition: opacity 0.3s ease;
         }
 
+        // 로고 색상 변경 brightness는 검정, invert 흰색
         .sponsor-logo[alt="Puma"],
         .sponsor-logo[alt="Hennessy"],
         .sponsor-logo[alt="LVMH"],

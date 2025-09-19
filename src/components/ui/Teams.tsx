@@ -95,7 +95,7 @@ const Teams = () => {
       country: 'United Kingdom',
       championships: 8,
       wins: 183,
-      carImage: 'McLaren_MCL39.jpg',
+      carImage: 'McLaren_MCL39.png',
       logo: 'McLaren.svg',
       color: 0xFF8700,
       slogan: 'For The Fearless',
@@ -241,195 +241,213 @@ const Teams = () => {
     return colorMap[teamId] || { primary: 'rgba(255, 255, 255, 0.7)', secondary: '#000000', accent: 'rgba(0, 144, 255, 0.6)' }
   }, [])
 
+  // [Three.js 초기화] 3D 자동차 모델 표시를 위한 Three.js 설정
   const initThreeJS = useCallback(async () => {
     if (!canvasRef.current) return
 
+    // [3D 장면 생성] 어두운 배경의 3D 공간
     sceneRef.current = new THREE.Scene()
-    sceneRef.current.background = new THREE.Color(0x111111)
+    sceneRef.current.background = new THREE.Color(0x111111)  // 진회색 배경
 
+    // [3D 카메라] 자동차를 볼 시점 설정
     cameraRef.current = new THREE.PerspectiveCamera(60, 1, 0.1, 1000)
-    cameraRef.current.position.set(0, 0, 8)
+    cameraRef.current.position.set(0, 0, 8)  // 상대적으로 가까운 시점
 
+    // [WebGL 렌더러] 고품질 3D 렌더링 설정
     rendererRef.current = new THREE.WebGLRenderer({ canvas: canvasRef.current, antialias: true })
-    rendererRef.current.setPixelRatio(window.devicePixelRatio)
-    rendererRef.current.shadowMap.enabled = true
-    rendererRef.current.shadowMap.type = THREE.PCFSoftShadowMap
-    rendererRef.current.toneMapping = THREE.ACESFilmicToneMapping
-    rendererRef.current.toneMappingExposure = 1.25
+    rendererRef.current.setPixelRatio(window.devicePixelRatio)  // 고해상도 디스플레이 대응
+    rendererRef.current.shadowMap.enabled = true                // 그림자 효과 활성화
+    rendererRef.current.shadowMap.type = THREE.PCFSoftShadowMap // 부드러운 그림자
+    rendererRef.current.toneMapping = THREE.ACESFilmicToneMapping // 영화적 색조 보정
+    rendererRef.current.toneMappingExposure = 1.25               // 노출 조절 (25% 밝게)
 
-    // Post-processing setup
+    // [후처리 효과] 영화적 비주얼 효과를 위한 설정
     composerRef.current = new EffectComposer(rendererRef.current)
     const renderPass = new RenderPass(sceneRef.current, cameraRef.current)
     composerRef.current.addPass(renderPass)
 
+    // [블룸 효과] 밝은 부분이 빛나는 효과 (자동차 하이라이트 등)
     bloomPassRef.current = new UnrealBloomPass(
       new THREE.Vector2(window.innerWidth, window.innerHeight),
-      1.5, // strength
-      0.4, // radius
-      0.85 // threshold
+      1.5, // 블룸 강도
+      0.4, // 블룸 반경
+      0.85 // 블룸 임계값 (얼마나 밝아야 빛날지)
     )
     composerRef.current.addPass(bloomPassRef.current)
 
+    // [궤도 컨트롤] 마우스로 3D 자동차를 회전시켜 볼 수 있는 기능
     controlsRef.current = new OrbitControls(cameraRef.current, canvasRef.current)
-    controlsRef.current.enableDamping = true
-    controlsRef.current.dampingFactor = 0.05
-    controlsRef.current.minDistance = 5
-    controlsRef.current.maxDistance = 12
-    controlsRef.current.enablePan = false
-    controlsRef.current.maxPolarAngle = Math.PI / 1.8
-    controlsRef.current.minPolarAngle = Math.PI / 3
+    controlsRef.current.enableDamping = true         // 부드러운 움직임 (관성)
+    controlsRef.current.dampingFactor = 0.05         // 관성 강도 (5%)
+    controlsRef.current.minDistance = 5              // 최대 확대 거리
+    controlsRef.current.maxDistance = 12             // 최대 축소 거리
+    controlsRef.current.enablePan = false            // 팬 이동 비활성화 (회전만 가능)
+    controlsRef.current.maxPolarAngle = Math.PI / 1.8 // 상단 회전 제한
+    controlsRef.current.minPolarAngle = Math.PI / 3   // 하단 회전 제한
 
-    // Enhanced lighting
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 3)
-    directionalLight.position.set(5, 5, 5)
-    directionalLight.castShadow = true
+    // [조명 설정] 사실적이고 드라마틱한 3D 자동차 조명
+    // 메인 조명 (태양광 역할)
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 3)  // 흰색 강한 빛
+    directionalLight.position.set(5, 5, 5)  // 우측 상단에서 비춰준
+    directionalLight.castShadow = true      // 그림자 생성
     sceneRef.current.add(directionalLight)
 
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.8)
+    // 전체 환경광 (대기 빛 역할)
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.8)  // 어두운 회색 전체 빛
     sceneRef.current.add(ambientLight)
 
-    // Rim light for dramatic effect
+    // 림 라이트 (팀 색상의 외곽선 강조 조명)
     const rimLight = new THREE.DirectionalLight(selectedTeam?.color || 0x0090FF, 2)
-    rimLight.position.set(-5, 0, 2)
+    rimLight.position.set(-5, 0, 2)  // 왼쪽에서 외곽선 빛
     sceneRef.current.add(rimLight)
 
-    // Load car texture and create 3D car model
-    await loadCarTexture()
-    createEnhanced3DCarModel()
+    // [3D 자동차 생성] 팀별 자동차 이미지를 로드하여 3D 모델 생성
+    await loadCarTexture()        // 선택된 팀의 자동차 이미지 로드
+    createEnhanced3DCarModel()    // 3D 자동차 모델 생성 (여러 면으로 구성)
 
     animate()
   }, [selectedTeam])
 
+  // [텍스처 로드] 선택된 팀의 자동차 이미지를 3D 텍스처로 로드
   const loadCarTexture = useCallback(async () => {
     if (!selectedTeam) return
 
+    // [Three.js 텍스처 로더] 이미지 파일을 3D 텍스처로 변환
     const loader = new THREE.TextureLoader()
     try {
-      const imagePath = getCarImage(selectedTeam.carImage)
+      const imagePath = getCarImage(selectedTeam.carImage)  // 팀별 자동차 이미지 경로
       carTextureRef.current = await new Promise((resolve, reject) => {
-        loader.load(imagePath, resolve, undefined, reject)
+        loader.load(imagePath, resolve, undefined, reject)  // 비동기 로드
       })
-      carTextureRef.current.wrapS = THREE.ClampToEdgeWrapping
-      carTextureRef.current.wrapT = THREE.ClampToEdgeWrapping
-      carTextureRef.current.flipY = false
+      // [텍스처 설정] 이미지가 에지에서 반복되지 않도록 설정
+      carTextureRef.current.wrapS = THREE.ClampToEdgeWrapping  // S축 (가로) 클램핑
+      carTextureRef.current.wrapT = THREE.ClampToEdgeWrapping  // T축 (세로) 클램핑
+      carTextureRef.current.flipY = false                     // Y축 뒤집기 비활성화
     } catch (error) {
       console.warn('Failed to load car texture:', error)
       carTextureRef.current = null
     }
   }, [selectedTeam, getCarImage])
 
+  // [3D 자동차 모델] 여러 면을 조합해서 입체적인 3D 자동차 모델 생성
   const createEnhanced3DCarModel = useCallback(() => {
-    const group = new THREE.Group()
+    const group = new THREE.Group()  // 여러 면을 그룹화할 컨테이너
 
-    // Create a more realistic 3D car shape using multiple planes
+    // [메인 자동차 모델] 여러 면을 조합해서 입체감 생성
     if (carTextureRef.current) {
-      // Main car body (front view)
-      const frontGeometry = new THREE.PlaneGeometry(6, 3)
+      // [전면] 주 자동차 이미지가 나타나는 면
+      const frontGeometry = new THREE.PlaneGeometry(6, 3)      // 6x3 비율의 사각형
       const frontMaterial = new THREE.MeshStandardMaterial({
-        map: carTextureRef.current,
-        metalness: 0.3,
-        roughness: 0.4,
-        transparent: true
+        map: carTextureRef.current,  // 로드된 자동차 이미지 적용
+        metalness: 0.3,              // 금속성 30% (약간 반사)
+        roughness: 0.4,              // 거칠기 40% (매트한 표면)
+        transparent: true            // 투명도 사용 가능
       })
       const frontPlane = new THREE.Mesh(frontGeometry, frontMaterial)
-      frontPlane.position.set(0, 0, 0.1)
+      frontPlane.position.set(0, 0, 0.1)  // 앞쪽으로 약간 돌출
       group.add(frontPlane)
 
-      // Side panels for 3D depth
-      const sideGeometry = new THREE.PlaneGeometry(1.5, 3)
+      // [측면] 3D 깊이감을 위한 좌우 측면 패널
+      const sideGeometry = new THREE.PlaneGeometry(1.5, 3)    // 좌우 측면용 사각형
       const sideMaterial = new THREE.MeshStandardMaterial({
-        color: selectedTeam?.color || 0x1E3A8A,
-        metalness: 0.7,
-        roughness: 0.3,
+        color: selectedTeam?.color || 0x1E3A8A,  // 팀 브랜드 색상 사용
+        metalness: 0.7,   // 금속성 70% (높은 반사)
+        roughness: 0.3,   // 거칠기 30% (광택 표면)
         transparent: true,
-        opacity: 0.8
+        opacity: 0.8      // 80% 불투명도
       })
 
-      // Left side
+      // 왼쪽 측면
       const leftSide = new THREE.Mesh(sideGeometry, sideMaterial)
-      leftSide.position.set(-3.2, 0, 0)
-      leftSide.rotation.y = Math.PI / 2
+      leftSide.position.set(-3.2, 0, 0)     // 왼쪽으로 이동
+      leftSide.rotation.y = Math.PI / 2      // Y축 90도 회전
       group.add(leftSide)
 
-      // Right side
+      // 오른쪽 측면
       const rightSide = new THREE.Mesh(sideGeometry, sideMaterial)
-      rightSide.position.set(3.2, 0, 0)
-      rightSide.rotation.y = -Math.PI / 2
+      rightSide.position.set(3.2, 0, 0)     // 오른쪽으로 이동
+      rightSide.rotation.y = -Math.PI / 2    // Y축 -90도 회전
       group.add(rightSide)
 
-      // Top and bottom for more depth
-      const topBottomGeometry = new THREE.PlaneGeometry(6, 1.5)
+      // [상하면] 완전한 3D 박스 모양을 위한 상단/하단 면
+      const topBottomGeometry = new THREE.PlaneGeometry(6, 1.5)  // 상하 면용 사각형
       const topBottomMaterial = new THREE.MeshStandardMaterial({
-        color: selectedTeam?.color || 0x1E3A8A,
-        metalness: 0.8,
-        roughness: 0.2,
+        color: selectedTeam?.color || 0x1E3A8A,  // 팀 브랜드 색상
+        metalness: 0.8,    // 금속성 80% (매우 반사적)
+        roughness: 0.2,    // 거칠기 20% (매우 부드러운 표면)
         transparent: true,
-        opacity: 0.6
+        opacity: 0.6       // 60% 불투명도
       })
 
-      // Top
+      // 상단 면 (지다/루프)
       const top = new THREE.Mesh(topBottomGeometry, topBottomMaterial)
-      top.position.set(0, 1.6, 0)
-      top.rotation.x = -Math.PI / 2
+      top.position.set(0, 1.6, 0)      // 위쪽으로 이동
+      top.rotation.x = -Math.PI / 2     // X축 -90도 회전 (수평으로)
       group.add(top)
 
-      // Bottom
+      // 하단 면 (바닥/언더플로어)
       const bottom = new THREE.Mesh(topBottomGeometry, topBottomMaterial)
-      bottom.position.set(0, -1.6, 0)
-      bottom.rotation.x = Math.PI / 2
+      bottom.position.set(0, -1.6, 0)   // 아래쪽으로 이동
+      bottom.rotation.x = Math.PI / 2    // X축 90도 회전 (수평으로)
       group.add(bottom)
     }
 
 
+    // [그룹 등록] 완성된 3D 자동차 모델을 장면에 추가
     carRef.current = group
     sceneRef.current.add(carRef.current)
   }, [selectedTeam])
 
+  // [3D 애니메이션] 3D 자동차의 생동감 있는 움직임 효과
   const animate = useCallback(() => {
     const animateLoop = () => {
       animationIdRef.current = requestAnimationFrame(animateLoop)
 
+      // [컨트롤 업데이트] 마우스 컨트롤 상태 업데이트
       if (controlsRef.current) {
         controlsRef.current.update()
       }
 
+      // [3D 자동차 움직임] 계속 회전하며 둥둥 떠다니는 효과
       if (carRef.current) {
-        // Smooth Y-axis rotation
+        // Y축 천천히 회전 (자동차가 돌아가며 보임)
         carRef.current.rotation.y += 0.005
 
-        // Subtle floating animation
+        // 둥둥 떠다니는 효과 (Y축 상하 움직임)
         carRef.current.position.y = Math.sin(Date.now() * 0.0008) * 0.2
 
-        // Slight tilt for dynamic look
-        carRef.current.rotation.x = Math.sin(Date.now() * 0.0006) * 0.05
-        carRef.current.rotation.z = Math.cos(Date.now() * 0.0004) * 0.03
+        // 미세한 기울임 효과 (생동감 있는 움직임)
+        carRef.current.rotation.x = Math.sin(Date.now() * 0.0006) * 0.05  // X축 미세한 기울임
+        carRef.current.rotation.z = Math.cos(Date.now() * 0.0004) * 0.03  // Z축 미세한 비틀림
       }
 
+      // [렌더링] 후처리 효과와 함께 3D 장면 렌더링
       if (composerRef.current && sceneRef.current && cameraRef.current) {
-        composerRef.current.render()
+        composerRef.current.render()  // 블룸 효과 포함 렌더링
       }
     }
 
     animateLoop()
   }, [])
 
+  // [팀 선택] 팀 카드 클릭 시 영화적 연출로 상세정보 표시
   const selectTeam = useCallback(async (team) => {
     setSelectedTeam(team)
 
-    // 스크롤 막기
+    // [스크롤 제어] 모달 열리는 동안 배경 스크롤 방지
     document.body.style.overflow = 'hidden'
 
-    // 애니메이션 시퀀스 시작
+    // [단계별 애니메이션] 영화적 연출을 위한 3단계 시퀀스
     setTimeout(() => {
-      setCarEntering(true)
+      setCarEntering(true)    // 1단계: 자동차가 화면 왼쪽에서 등장
     }, 50)
 
     setTimeout(() => {
-      setCarCentered(true)
+      setCarCentered(true)    // 2단계: 자동차가 중앙에 위치 + 확대
     }, 800)
 
     setTimeout(() => {
-      setPanelsAssembling(true)
+      setPanelsAssembling(true) // 3단계: 정보 패널들이 사방에서 날아와서 조립
     }, 1200)
   }, [])
 

@@ -489,48 +489,59 @@ const Driver = () => {
     }
   }, [])
 
+  // [3단계] 새 드라이버 이미지 파일 로드
   const loadDriverImage = useCallback((driverIndex) => {
     const driver = drivers[driverIndex]
     if (!driver) return
 
     console.log('Loading driver image:', driver.image)
 
+    // [3-1] 이미지 객체 생성
     const img = new Image()
     img.crossOrigin = 'anonymous'
+
+    // [3-2] 이미지 로드 성공하면 -> 4단계로
     img.onload = () => {
       console.log('Image loaded successfully:', img.width, img.height)
-      imageToParticles(img)
+      imageToParticles(img)  // 4단계: 이미지를 파티클로 변환
     }
     img.onerror = () => {
       console.error('Failed to load image:', driver.image)
     }
+
+    // [3-3] 실제 이미지 파일 로드 시작 (예: /assets/images/Drivers/...jpg)
     img.src = driver.image
   }, [drivers])
 
+  // [4단계] 이미지를 점(파티클)으로 변환하는 핵심 함수!
   const imageToParticles = useCallback((image) => {
+    // [4-1] 캔버스 준비 (이미지 분석용)
     // 이미지를 캔버스에 그리기 (원본 해상도 최대 활용)
     const width = 600
     const height = 600
     canvas2DRef.current.width = width
     canvas2DRef.current.height = height
 
+    // [4-2] 이미지를 캔버스에 그리기
     ctxRef.current.clearRect(0, 0, width, height)
     ctxRef.current.imageSmoothingEnabled = false
     ctxRef.current.drawImage(image, 0, 0, width, height)
 
+    // [4-3] 모든 픽셀 데이터 가져오기 (RGBA 값들)
     const imageData = ctxRef.current.getImageData(0, 0, width, height)
-    const pixels = imageData.data
+    const pixels = imageData.data  // [R,G,B,A, R,G,B,A, ...]
 
     const newTargetPositions = []
 
+    // [4-4] 각 픽셀을 3D 점으로 변환 (핵심 로직!)
     // 픽셀을 3D 좌표로 변환
-    for (let y = 0; y < height; y += 3) {
+    for (let y = 0; y < height; y += 3) {  // 3픽셀씩 건너뛰며 (성능)
       for (let x = 0; x < width; x += 3) {
         const index = (Math.floor(y) * width + Math.floor(x)) * 4
-        const alpha = pixels[index + 3]
-        const r = pixels[index]
-        const g = pixels[index + 1]
-        const b = pixels[index + 2]
+        const alpha = pixels[index + 3]  // 투명도
+        const r = pixels[index]          // 빨강
+        const g = pixels[index + 1]      // 초록
+        const b = pixels[index + 2]      // 파랑
 
         // 인물만 표시 (배경 완전 제거)
         const isNotBackground = alpha > 100 && (r + g + b > 150) &&
@@ -569,17 +580,19 @@ const Driver = () => {
             }
           }
 
-          const posX = (x - width / 2) * 0.8
-          const posY = -(y - height / 2) * 0.8 - 50
+          // [4-5] 2D 픽셀 위치를 3D 공간 좌표로 변환
+          const posX = (x - width / 2) * 0.8      // 중앙 기준 X좌표
+          const posY = -(y - height / 2) * 0.8 - 50  // 중앙 기준 Y좌표 (위아래 반전)
 
+          // [4-6] 밝기에 따라 Z축 깊이 결정 (입체감!)
           // 입체감을 위한 Z축 깊이 계산
           let depthZ = 0
 
-          if (brightness > 180) {
+          if (brightness > 180) {         // 밝은 부분 = 앞으로 튀어나옴
             depthZ = 15 + Math.random() * 10
-          } else if (brightness > 120) {
+          } else if (brightness > 120) {  // 중간 밝기 = 중간 깊이
             depthZ = 5 + Math.random() * 5
-          } else {
+          } else {                        // 어두운 부분 = 뒤로 들어감
             depthZ = -5 + Math.random() * 5
           }
 
@@ -615,11 +628,13 @@ const Driver = () => {
       }
     }
 
+    // [4-7] 변환 완료! 목표 위치 저장하고 모핑 시작
     console.log('Generated particles:', newTargetPositions.length / 6)
-    targetPositionsRef.current = newTargetPositions
-    morphParticles()
+    targetPositionsRef.current = newTargetPositions  // 새 이미지의 점 위치들 저장
+    morphParticles()  // 5단계: 점들을 새 위치로 이동시키기
   }, [])
 
+  // [5단계] 점들을 새 이미지 모양으로 모으기 (애니메이션)
   const morphParticles = useCallback(() => {
     if (!particleSystemRef.current || targetPositionsRef.current.length === 0) return
 
@@ -629,13 +644,16 @@ const Driver = () => {
     const alpha = particleSystemRef.current.geometry.attributes.alpha.array
     const targetCount = Math.floor(targetPositionsRef.current.length / 6)
 
+    // [5-1] 각 점을 목표 위치로 서서히 이동 (부드러운 애니메이션)
     // 사용될 파티클들을 타겟 위치로 이동
     for (let i = 0; i < targetCount && i < positions.length / 3; i++) {
       const particleIndex = i * 3
       const targetIndex = i * 6
 
       if (targetIndex + 5 < targetPositionsRef.current.length) {
-        const speed = 0.12
+        const speed = 0.12  // 이동 속도 (0.12 = 12%씩 가까워짐)
+
+        // [5-2] 현재 위치에서 목표 위치로 점진적 이동
         positions[particleIndex] += (targetPositionsRef.current[targetIndex] - positions[particleIndex]) * speed
         positions[particleIndex + 1] += (targetPositionsRef.current[targetIndex + 1] - positions[particleIndex + 1]) * speed
         positions[particleIndex + 2] += (targetPositionsRef.current[targetIndex + 2] - positions[particleIndex + 2]) * speed
@@ -671,24 +689,28 @@ const Driver = () => {
     particleSystemRef.current.geometry.attributes.alpha.needsUpdate = true
   }, [])
 
+  // [2단계] selectDriver에서 호출됨 - 전환 효과 시작
   const morphToDriver = useCallback((newIndex) => {
     if (isTransitioningRef.current) return
 
     isTransitioningRef.current = true
 
+    // [2-1] 현재 점들을 랜덤으로 흩어뜨리기 (폭발 효과)
     // 파티클 분산
     const positions = particleSystemRef.current.geometry.attributes.position.array
     for (let i = 0; i < positions.length; i += 3) {
-      positions[i] += (Math.random() - 0.5) * 200
-      positions[i + 1] += (Math.random() - 0.5) * 200
-      positions[i + 2] += (Math.random() - 0.5) * 100
+      positions[i] += (Math.random() - 0.5) * 200      // X축 랜덤 흩어짐
+      positions[i + 1] += (Math.random() - 0.5) * 200  // Y축 랜덤 흩어짐
+      positions[i + 2] += (Math.random() - 0.5) * 100  // Z축 랜덤 흩어짐
     }
 
+    // [2-2] 상태 업데이트 - 이게 상세정보 UI를 바꿈!
     // 즉시 드라이버 정보 업데이트
     setCurrentDriverIndex(newIndex)
 
+    // [2-3] 0.5초 후 새 이미지 로드 시작
     setTimeout(() => {
-      loadDriverImage(newIndex)
+      loadDriverImage(newIndex)  // 3단계로 이동
       isTransitioningRef.current = false
     }, 500)
   }, [loadDriverImage])
@@ -741,6 +763,7 @@ const Driver = () => {
     animateLoop()
   }, [morphParticles])
 
+  // [시작점] 카드 클릭하면 여기서 시작!
   // 드라이버 선택
   const selectDriver = useCallback((index) => {
     if (index !== currentDriverIndex && !isTransitioningRef.current) {
@@ -840,10 +863,12 @@ const Driver = () => {
       <div className="hologram-main">
         <canvas ref={hologramCanvasRef} className="hologram-canvas"></canvas>
 
+        {/* [끝점] 최종 결과 - 상세정보 표시! */}
         {/* 우측 하단 상세정보 */}
         <div className="driver-details">
           <h1 className="section-title">DRIVERS</h1>
           <div className="driver-info">
+            {/* selectedDriver는 currentDriverIndex가 바뀔 때마다 자동 업데이트됨 */}
             <h2 className="driver-name">{selectedDriver.name}</h2>
             <p className="driver-team">{selectedDriver.team}</p>
             <div className="driver-stats">
@@ -899,6 +924,7 @@ const Driver = () => {
                   <div
                     key={driver.id}
                     className={`driver-card-mini ${driver.index === currentDriverIndex ? 'active' : ''}`}
+                    /* [시작점] 카드 클릭하면 selectDriver 함수 호출! */
                     onClick={() => selectDriver(driver.index)}
                   >
                     <img src={driver.image} alt={driver.name} className="card-avatar" />

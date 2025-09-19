@@ -11,14 +11,14 @@ export default function AppHeader() {
   const audioRef = useRef(null)
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0)
 
-  // 음악 트랙 리스트
+  // [음악 데이터] F1 경주 분위기용 배경음악 리스트
   const tracks = [
     {
-      name: 'Lose My Mind (feat. Doja Cat)',
+      name: 'Lose My Mind (feat. Doja Cat)',  
       src: '/assets/music/Lose_My_Mind_(feat_Doja_Cat).mp3'
     },
     {
-      name: 'Messy',
+      name: 'Messy', 
       src: '/assets/music/Messy.mp3'
     }
   ]
@@ -110,27 +110,34 @@ export default function AppHeader() {
     closeMenu()
   }
 
+  // [음악 로드] 지정된 인덱스의 트랙을 오디오 엘리먼트에 로드
   const loadTrack = (index) => {
+    // [음악-1] 오디오 엘리먼트가 없으면 새로 생성
     if (!audioRef.current) {
       audioRef.current = new Audio()
     }
 
+    // [음악-2] 트랙 정보 가져와서 오디오 소스 설정
     const track = tracks[index]
     if (track) {
-      audioRef.current.src = track.src
-      audioRef.current.load()
+      audioRef.current.src = track.src  // 음악 파일 경로 설정
+      audioRef.current.load()          // 오디오 파일 로드
     }
   }
 
+  // [음악 컨트롤] 재생/일시정지 토글 기능
   const toggleMusic = () => {
+    // [음악-3] 오디오가 없으면 현재 트랙 로드
     if (!audioRef.current) {
       loadTrack(currentTrackIndex)
     }
 
     if (isPlaying) {
+      // [음악-4a] 재생 중이면 일시정지
       audioRef.current.pause()
       setIsPlaying(false)
     } else {
+      // [음악-4b] 정지 중이면 재생 (에러 처리 포함)
       audioRef.current.play().catch(error => {
         console.log('Audio play failed:', error)
       })
@@ -138,13 +145,16 @@ export default function AppHeader() {
     }
   }
 
+  // [다음 트랙] 다음 곡으로 전환 (순환 재생)
   const nextTrack = () => {
-    if (tracks.length <= 1) return
+    if (tracks.length <= 1) return  // 트랙이 1개 이하면 종료
 
+    // [트랙-1] 다음 인덱스 계산 (0~1 순환)
     const newIndex = (currentTrackIndex + 1) % tracks.length
     setCurrentTrackIndex(newIndex)
     loadTrack(newIndex)
 
+    // [트랙-2] 재생 중이었다면 새 트랙도 자동 재생
     if (isPlaying) {
       audioRef.current.play().catch(error => {
         console.log('Audio play failed:', error)
@@ -152,15 +162,18 @@ export default function AppHeader() {
     }
   }
 
+  // [이전 트랙] 이전 곡으로 전환 (역순환 재생)
   const previousTrack = () => {
-    if (tracks.length <= 1) return
+    if (tracks.length <= 1) return  // 트랙이 1개 이하면 종료
 
+    // [트랙-3] 이전 인덱스 계산 (역순환: 0에서 뒤로 가면 마지막)
     const newIndex = currentTrackIndex > 0
-      ? currentTrackIndex - 1
-      : tracks.length - 1
+      ? currentTrackIndex - 1      // 이전 트랙
+      : tracks.length - 1          // 0에서 뒤로 가면 마지막 트랙
     setCurrentTrackIndex(newIndex)
     loadTrack(newIndex)
 
+    // [트랙-4] 재생 중이었다면 새 트랙도 자동 재생
     if (isPlaying) {
       audioRef.current.play().catch(error => {
         console.log('Audio play failed:', error)
@@ -209,15 +222,16 @@ export default function AppHeader() {
 
           {/* Actions */}
           <div className="header-actions">
-            {/* Music Section with Mini Controller */}
+            {/* [음악 섹션] 메인 음악 버튼 + 미니 컨트롤러 */}
             <div className={`music-section ${isPlaying ? 'expanded' : ''}`}>
-              {/* Main Music Button */}
+              {/* [메인 버튼] 음악 재생/일시정지 버튼 */}
               <button
                 className={`music-btn ${isPlaying ? 'active' : ''}`}
                 onClick={toggleMusic}
               >
-                {/* Music Icon */}
+                {/* [아이콘 체인지] 재생 상태에 따라 다른 아이콘 표시 */}
                 <div className="music-icon">
+                  {/* [정지 상태] 3개 막대 아이콘 */}
                   {!isPlaying && (
                     <div className="music-lines">
                       <span className="line"></span>
@@ -225,7 +239,7 @@ export default function AppHeader() {
                       <span className="line"></span>
                     </div>
                   )}
-                  {/* Sound Wave Animation */}
+                  {/* [재생 상태] 진동하는 파형 애니메이션 */}
                   {isPlaying && (
                     <div className="sound-wave">
                       <span className="wave"></span>
@@ -238,17 +252,20 @@ export default function AppHeader() {
                 <div className="btn-bg"></div>
               </button>
 
-              {/* Mini Controller (shows when playing) */}
+              {/* [미니 컨트롤러] 재생 중일 때만 나타나는 컨트롤 패널 */}
               {isPlaying && (
                 <div className="mini-controller controller-enter">
+                  {/* [이전 버튼] 이전 트랙으로 이동 */}
                   <button className="control-btn prev-btn" onClick={previousTrack}>
                     <span className="control-icon">⏮</span>
                   </button>
 
+                  {/* [재생/일시정지 버튼] 토글 기능 */}
                   <button className="control-btn play-pause-btn" onClick={toggleMusic}>
                     <span className="control-icon">{isPlaying ? '⏸' : '▶'}</span>
                   </button>
 
+                  {/* [다음 버튼] 다음 트랙으로 이동 */}
                   <button className="control-btn next-btn" onClick={nextTrack}>
                     <span className="control-icon">⏭</span>
                   </button>
@@ -585,14 +602,15 @@ export default function AppHeader() {
           animation-delay: 0.6s;
         }
 
+        /* [파형 애니메이션] 재생 중 4개 막대가 다른 속도로 진동 */
         @keyframes soundWave {
           0%, 100% {
-            transform: scaleY(1);
-            opacity: 0.7;
+            transform: scaleY(1);    // 기본 높이
+            opacity: 0.7;            // 약간 투명
           }
           50% {
-            transform: scaleY(1.8);
-            opacity: 1;
+            transform: scaleY(1.8);  // 1.8배 늘어남
+            opacity: 1;              // 완전 불투명
           }
         }
 
@@ -609,14 +627,15 @@ export default function AppHeader() {
           animation: controllerEnter 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
+        /* [컨트롤러 등장] 미니 컨트롤러가 왼쪽에서 슬라이드인 */
         @keyframes controllerEnter {
           from {
-            opacity: 0;
-            transform: translateX(-20px) scale(0.8);
+            opacity: 0;                              // 시작: 투명
+            transform: translateX(-20px) scale(0.8); // 시작: 왼쪽 20px + 80% 크기
           }
           to {
-            opacity: 1;
-            transform: translateX(0) scale(1);
+            opacity: 1;                              // 끝: 완전히 보임
+            transform: translateX(0) scale(1);       // 끝: 원래 위치 + 100% 크기
           }
         }
 

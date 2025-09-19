@@ -180,9 +180,9 @@ export default function History() {
           {/* Book Bookmark */}
           <div className="book-bookmark"></div>
 
-          {/* Ancient Fantasy Book */}
+          {/* Book */}
           <div
-            className="ancient-book"
+            className="book"
             style={{
               transform: `rotateX(${mouseRotation.x}deg) rotateY(${mouseRotation.y}deg) translateY(${floatY}px)`
             }}
@@ -646,8 +646,8 @@ export default function History() {
           }
         }
 
-        /* Ancient Fantasy Book */
-        .ancient-book {
+        /* Book */
+        .book {
           position: relative;
           width: 800px;
           height: 600px;
@@ -849,19 +849,22 @@ export default function History() {
           object-fit: contain;
         }
 
-        /* Text Content */
-        .text-content {
+      .text-content {
           flex: 1;
+          position: relative;   /* 레이어 기준 생성 */
+          z-index: 10;          /* 이미지보다 위로 */
         }
 
         .text-content p {
           font-family: 'Arial', sans-serif;
           font-size: 1rem;
           line-height: 1.7;
-          color: #222;
+          color: #222 !important; /* 강제 적용 (투명/덮임 방지) */
           margin: 0;
           text-align: justify;
           font-weight: 500;
+          position: relative;
+          z-index: 11;           /* 텍스트는 더 위 */
         }
 
         /* Article Header */
@@ -870,21 +873,16 @@ export default function History() {
           text-align: left;
         }
 
-        .article-title {
-          font-family: 'Arial', sans-serif;
-          font-size: 2.2rem;
-          font-weight: 700;
-          color: #222;
-          margin: 0 0 0.5rem 0;
-          line-height: 1.2;
+       .article-title {
+          position: relative;   /* 위치는 그대로 */
+          z-index: 20;          /* 단순히 위로만 올림 */
+          color: #111 !important;
         }
 
         .article-subtitle {
-          font-size: 1rem;
-          color: #667eea;
-          font-weight: 500;
-          text-transform: uppercase;
-          letter-spacing: 1px;
+          position: relative;
+          z-index: 19;
+          color: #333 !important;
         }
 
         /* Featured Image */
@@ -903,19 +901,21 @@ export default function History() {
           object-fit: contain;
         }
 
-        /* Article Text */
         .article-text {
-          flex: 1;
+          position: relative;   /* 레이어 생성 */
+          z-index: 10;          /* 이미지보다 위 */
         }
 
         .article-text p {
           font-family: 'Arial', sans-serif;
-          font-size: 1.05rem;
+          font-size: 1rem;
           line-height: 1.7;
-          color: #1a1a1a;
+          color: #222 !important; /* 확실히 보이도록 강제 */
           margin: 0;
           text-align: justify;
           font-weight: 500;
+          position: relative;
+          z-index: 11;          /* 텍스트 자체는 더 위 */
         }
 
         /* Page Number - Always on top */
